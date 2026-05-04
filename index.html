@@ -2044,6 +2044,23 @@ footer {
           <input type="hidden" id="budgetValue" required />
         </div>
 
+        <!-- Contact Details -->
+        <div class="intake-field">
+          <label class="intake-label">Your Full Name <span style="color:var(--gold)">*</span></label>
+          <input type="text" id="intakeName" class="intake-input" placeholder="e.g. John Adeyemi" />
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:2.2rem;">
+          <div>
+            <label class="intake-label">Email Address <span style="color:var(--gold)">*</span></label>
+            <input type="email" id="intakeEmail" class="intake-input" placeholder="you@example.com" />
+          </div>
+          <div>
+            <label class="intake-label">WhatsApp / Phone Number <span style="color:var(--gold)">*</span></label>
+            <input type="tel" id="intakePhone" class="intake-input" placeholder="e.g. 08012345678" />
+          </div>
+        </div>
+
         <!-- Optional note -->
         <div class="intake-field">
           <label class="intake-label">Any brief note about your idea? <span style="color:var(--ink-muted); font-weight:400">(optional)</span></label>
@@ -2065,7 +2082,14 @@ footer {
         <div style="font-size:3rem; margin-bottom:1rem;">🎉</div>
         <h3 style="font-family:'Playfair Display',serif; font-size:1.6rem; color:var(--ink); margin-bottom:0.8rem;">Got it! Stephen will be in touch.</h3>
         <p style="color:var(--ink-muted); line-height:1.7;">Your interest has been noted. Expect a WhatsApp or email within 24 hours for a free conversation about your project.</p>
-        <a href="https://wa.me/2348062433136?text=Hi%20Stephen%2C%20I%20just%20submitted%20my%20project%20interest%20on%20your%20portfolio!" target="_blank" class="btn-primary" style="margin-top:1.5rem; display:inline-flex;">Follow Up on WhatsApp →</a>
+        <button onclick="openWhatsApp()" class="btn-primary" style="margin-top:1.5rem; display:inline-flex; border:none; cursor:pointer;">Follow Up on WhatsApp →</button>
+<script>
+function openWhatsApp() {
+  const name = document.getElementById('intakeName') ? document.getElementById('intakeName').value : '';
+  const msg = encodeURIComponent("Hi Stephen, I'm " + (name || "a potential client") + " — I just submitted my project interest on your portfolio. Looking forward to hearing from you!");
+  window.open('https://wa.me/2348062433136?text=' + msg, '_blank');
+}
+</script>
       </div>
     </div>
   </div>
@@ -2205,6 +2229,30 @@ footer {
   line-height: 1.4;
 }
 
+.intake-input {
+  width: 100%;
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.2rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.88rem;
+  color: var(--ink);
+  background: var(--bg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.intake-input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(29,106,106,0.1);
+}
+
+.intake-input::placeholder {
+  color: var(--ink-muted);
+  opacity: 0.7;
+}
+
 .intake-textarea {
   width: 100%;
   border: 1.5px solid var(--border2);
@@ -2248,39 +2296,40 @@ function selectTier(el, value) {
 
 function submitIntake(e) {
   e.preventDefault();
+  const name   = document.getElementById('intakeName').value.trim();
+  const email  = document.getElementById('intakeEmail').value.trim();
+  const phone  = document.getElementById('intakePhone').value.trim();
   const sector = document.getElementById('sectorValue').value;
-  const tier = document.getElementById('tierValue').value;
+  const tier   = document.getElementById('tierValue').value;
   const budget = document.getElementById('budgetValue').value;
-  const note = document.getElementById('intakeNote').value;
+  const note   = document.getElementById('intakeNote').value.trim();
 
-  if (!sector || !tier || !budget) {
+  if (!name || !email || !phone || !sector || !tier || !budget) {
     alert('Please complete all required fields before submitting.');
     return;
   }
 
-  // Build WhatsApp message as fallback / primary delivery
-  const msg = encodeURIComponent(
-    "Hi Stephen, I filled out your project interest form on your portfolio:\n\n" +
-    "Sector: " + sector + "\n" +
-    "Pricing Tier: " + tier + "\n" +
-    "Budget: " + budget +
-    (note ? "\nNote: " + note : "") +
-    "\n\nLooking forward to hearing from you!"
-  );
+  // Send to Google Sheets
+  const SHEET_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
 
-  // Send to Google Sheets (replace SCRIPT_URL with your deployed Apps Script URL)
-  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxEOZ9v0S03DVMdDpdN4CsJf0dlrD3AdIuyikm346J7ivHA82Yvj0mNWJ-d0EMiAxpsCA/exec';
+  const payload = {
+    timestamp: new Date().toISOString(),
+    name,
+    email,
+    phone,
+    sector,
+    tier,
+    budget,
+    note
+  };
 
-  const payload = { sector, tier, budget, note, timestamp: new Date().toISOString() };
-
-  // If a real sheet URL is configured, post there; otherwise just use WhatsApp
-  if (SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+  if (SHEET_URL !== 'https://script.google.com/macros/s/AKfycbxEOZ9v0S03DVMdDpdN4CsJf0dlrD3AdIuyikm346J7ivHA82Yvj0mNWJ-d0EMiAxpsCA/exec') {
     fetch(SHEET_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
+    }).catch(() => {});
   }
 
   // Show success state
