@@ -1822,7 +1822,7 @@ function submitIntake(e) {
     return;
   }
 
-  const SHEET_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzIblAHPAsJXqlz16_ct9TSjJXJvLz5qGY-gnf-A6Hj8CUGW1gpRbHwjoK5fsekqzR1hA/exec';
   const payload = { timestamp: new Date().toISOString(), name, email, phone, sector, tier, budget, note };
 
   if (SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
